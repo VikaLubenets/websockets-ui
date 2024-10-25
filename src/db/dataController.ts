@@ -1,4 +1,4 @@
-import { PlayerData } from "../models/types.js";
+import { PlayerData } from "../models/types";
 
 export default class DataController {
     private static instance: DataController | null = null;
@@ -15,5 +15,5 @@ export default class DataController {
         return DataController.instance;
     }
 
-    
+
 }
