@@ -1,7 +1,14 @@
 export interface PlayerData {
+    id: number;
     name: string;
     password: string;
     wins: number;
+}
+
+export interface RoomData {
+    id: number | string;
+    players: PlayerData[];
+    gameId?: number | string | null; 
 }
 
 export type WebSocketRequest =

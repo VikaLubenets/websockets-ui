@@ -1,6 +1,14 @@
-import { RegRequest, WebSocketMessage, WebSocketRequest } from "../models/types";
+import { RegRequest, WebSocketRequest, WebSocketResponse } from "../models/types";
 import { register } from "./helpers/register";
 import { updateWinners } from './helpers/updateWinners';
+import { updateRoom } from './helpers/updateRoom';
+
+const stringifyResponse = (response: WebSocketResponse) => 
+  JSON.stringify({ 
+      type: response.type,
+      data: JSON.stringify(response.data),
+      id: response.id 
+  });
 
 export default function MessageHandler(message: WebSocketRequest): string[] {
   const responses: string[] = [];
@@ -8,9 +16,11 @@ export default function MessageHandler(message: WebSocketRequest): string[] {
   switch (message.type) {
     case 'reg':
         const resReg = register(message as RegRequest);
-        responses.push(JSON.stringify(resReg));
+        responses.push(stringifyResponse(resReg));
         const resUW = updateWinners()
-        responses.push(JSON.stringify(resUW));
+        responses.push(stringifyResponse(resUW));
+        const resUR = updateRoom();
+        responses.push(stringifyResponse(resUR));
     break
     // case 'create_room':
 
