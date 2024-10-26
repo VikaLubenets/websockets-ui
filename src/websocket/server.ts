@@ -12,8 +12,9 @@ export function startWebSocketServer() {
         const playerId = nextPlayerId++;
 
         ws.on('message', (message) => {
-            const parsedMessage = deepJSONParse(message.toString()) as unknown as WebSocketRequest;
             let responses;
+            const parsedMessage = deepJSONParse(message.toString()) as unknown as WebSocketRequest;
+            
             if(parsedMessage.type === 'reg'){
                 const options = {
                     id: playerId,
@@ -23,6 +24,7 @@ export function startWebSocketServer() {
             } else {
                 responses = MessageHandler(parsedMessage as unknown as WebSocketRequest, playerId);
             }
+
             responses.forEach((res) => ws.send(res))
         });
 

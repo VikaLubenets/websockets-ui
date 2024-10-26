@@ -4,10 +4,12 @@ export default class DataController {
     private static instance: DataController | null = null;
     private playerData: PlayerData[];
     private roomsData: RoomData[];
+    private gameId: number;
 
     private constructor() {
         this.playerData = [];
         this.roomsData = [];
+        this.gameId = 0;
     }
 
     public static getInstance(): DataController {
@@ -37,6 +39,10 @@ export default class DataController {
 
     public getPlayerById(id: number){
         return this.playerData.find(player => player.id === id);
+    }
+
+    public getAllPlayers(): PlayerData[]{
+        return this.playerData
     }
 
     public addRoom(player: PlayerData){
@@ -74,5 +80,17 @@ export default class DataController {
 
     public getAllRooms(): RoomData[]{
         return this.roomsData
+    }
+
+    public getRoomById(id: number) {
+        return this.roomsData.find(room => room.id === id);
+    }
+
+    public createGame(roomId: number){
+        const room = this.roomsData.find(room => room.id === roomId)
+        if(room){
+            room.gameId = this.gameId++;
+            return room
+        }
     }
 }

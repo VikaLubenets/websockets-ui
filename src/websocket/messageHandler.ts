@@ -5,34 +5,47 @@ import { updateRoom } from './helpers/updateRoom';
 import { stringifyResponse } from "./helpers/stringifyResponse";
 import { createRoom } from "./helpers/createRoom";
 import { addUserToRoom } from "./helpers/addUserToRoom";
+import { createGame } from "./helpers/createGame";
+import DataController from "../db/dataController";
 
 export default function MessageHandler(message: WebSocketRequest, playerId: number, options?: Player,): string[] {
   const responses: string[] = [];
+  const data = DataController.getInstance();
+  const allPlayers = data.getAllPlayers()
 
   switch (message.type) {
     case 'reg':
       if(options){
         const resReg = register(message as RegRequest, options);
         responses.push(stringifyResponse(resReg));
+
         const resUW = updateWinners()
-        responses.push(stringifyResponse(resUW));
+        allPlayers.forEach(player => player.connection.send(stringifyResponse(resUW)))
+
         const resUR = updateRoom();
-        responses.push(stringifyResponse(resUR));
+        allPlayers.forEach(player => player.connection.send(stringifyResponse(resUR)))
       }
     break
     case 'create_room':
       const resCR = createRoom(message, playerId);
-      responses.push(stringifyResponse(resCR));
+      allPlayers.forEach(player => player.connection.send(stringifyResponse(resCR)))
+
       break;
     case 'add_user_to_room':
-      const resAUTR = addUserToRoom(message, playerId)
-      responses.push(stringifyResponse(resAUTR));
-      break;;
-    // case 'create_game':
+      const { resAUTR, shouldCreateGame } = addUserToRoom(message, playerId);
+      if (resAUTR) {
+        allPlayers.forEach(player => player.connection.send(stringifyResponse(resAUTR)))
+      }
+      if (shouldCreateGame) {
+          const room = data.getRoomById(Number(message.data.indexRoom))
+          if(room){
+            const players = room.players
+            players[0].connection.send(stringifyResponse(createGame(Number(message.data.indexRoom), players[0].id)))
+            players[1].connection.send(stringifyResponse(createGame(Number(message.data.indexRoom), players[1].id)))
+          }
+      }
+      break;
 
-    //   console.log(`Game created with ID: ${message.data?.idGame}`);
-    //   break;
-    
     // case 'add_ships':
 
     //   console.log(`Ships added for player ${message.data.indexPlayer}`);
