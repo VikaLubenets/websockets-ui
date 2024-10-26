@@ -1,8 +1,16 @@
+import WebSocket from 'ws';
+
+export interface Player {
+  id: number;
+  connection: WebSocket;
+}
+
 export interface PlayerData {
     id: number;
     name: string;
     password: string;
     wins: number;
+    connection: WebSocket;
 }
 
 export interface RoomData {

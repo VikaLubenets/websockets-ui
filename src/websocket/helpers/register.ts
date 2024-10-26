@@ -1,7 +1,7 @@
 import DataController from "../../db/dataController";
-import { RegRequest, RegResponse } from "../../models/types";
+import { Player, RegRequest, RegResponse } from "../../models/types";
 
-export function register(message: RegRequest): RegResponse {
+export function register(message: RegRequest, options: Player): RegResponse {
     const data = DataController.getInstance();
 
     if (data.hasPlayer(message.data.name)) {
@@ -17,12 +17,12 @@ export function register(message: RegRequest): RegResponse {
         };
     }
 
-    const index = data.setPlayerData(message.data);
+    data.setPlayerData(message.data, options);
     return {
         type: "reg",
         data: {
             name: message.data.name,
-            index,
+            index: options.id,
             error: false,
             errorText: ""
         },

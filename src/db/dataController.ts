@@ -1,4 +1,4 @@
-import { PlayerData, RoomData } from "../models/types";
+import { Player, PlayerData, RoomData } from "../models/types";
 
 export default class DataController {
     private static instance: DataController | null = null;
@@ -21,8 +21,8 @@ export default class DataController {
         return this.playerData.some(player => player.name === name);
     }
 
-    public setPlayerData(data: {name: string, password: string}): number {
-        const newPlayer: PlayerData = { ...data, wins: 0, id: this.playerData.length };
+    public setPlayerData(data: {name: string, password: string}, options: Player): number {
+        const newPlayer: PlayerData = { ...data, wins: 0, id: options.id, connection: options.connection };
         this.playerData.push(newPlayer);
         return this.playerData.length - 1;
     }
@@ -35,6 +35,10 @@ export default class DataController {
         return this.playerData.find(player => player.name === name);
     }
 
+    public getPlayerById(id: number){
+        return this.playerData.find(player => player.id === id);
+    }
+
     public addRoom(player: PlayerData){
         const newRoom = {
             id: this.roomsData.length,
@@ -44,17 +48,25 @@ export default class DataController {
         return this.roomsData.push(newRoom)
     }
 
-    public addUserToRoom(indexRoom: number, player: PlayerData): boolean {
+    public addUserToRoom(indexRoom: number | string, player: PlayerData): boolean {
         const maxPlayersInOneRoom = 2;
-        const room = this.roomsData[indexRoom];
-
-        if (room && room.players.length < maxPlayersInOneRoom) {
-            room.players.push(player);
-            return true;
-        } else {
-            return false;
+        const room = this.roomsData[Number(indexRoom)];
+    
+        if (room) {
+            const isPlayerInRoom = room.players.some(existingPlayer => existingPlayer.id === player.id);
+            if (isPlayerInRoom) {
+                return false;
+            }
+    
+            if (room.players.length < maxPlayersInOneRoom) {
+                room.players.push(player);
+                return true;
+            }
         }
+    
+        return false;
     }
+    
 
     public getAvailableRooms(): RoomData[] {
         return this.roomsData.filter(room => room.players.length === 1);

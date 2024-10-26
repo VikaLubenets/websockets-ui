@@ -1,43 +1,38 @@
-import { RegRequest, WebSocketRequest, WebSocketResponse } from "../models/types";
+import { Player, RegRequest, WebSocketRequest, WebSocketResponse } from "../models/types";
 import { register } from "./helpers/register";
 import { updateWinners } from './helpers/updateWinners';
 import { updateRoom } from './helpers/updateRoom';
+import { stringifyResponse } from "./helpers/stringifyResponse";
+import { createRoom } from "./helpers/createRoom";
+import { addUserToRoom } from "./helpers/addUserToRoom";
 
-const stringifyResponse = (response: WebSocketResponse) => 
-  JSON.stringify({ 
-      type: response.type,
-      data: JSON.stringify(response.data),
-      id: response.id 
-  });
-
-export default function MessageHandler(message: WebSocketRequest): string[] {
+export default function MessageHandler(message: WebSocketRequest, playerId: number, options?: Player,): string[] {
   const responses: string[] = [];
 
   switch (message.type) {
     case 'reg':
-        const resReg = register(message as RegRequest);
+      if(options){
+        const resReg = register(message as RegRequest, options);
         responses.push(stringifyResponse(resReg));
         const resUW = updateWinners()
         responses.push(stringifyResponse(resUW));
         const resUR = updateRoom();
         responses.push(stringifyResponse(resUR));
+      }
     break
-    // case 'create_room':
-
-    //   console.log(`Room created`);
-    //   break;
-    // case 'add_user_to_room':
-
-    //   console.log(`User added to room ${message.data?.indexRoom}`);
-    //   break;
+    case 'create_room':
+      const resCR = createRoom(message, playerId);
+      responses.push(stringifyResponse(resCR));
+      break;
+    case 'add_user_to_room':
+      const resAUTR = addUserToRoom(message, playerId)
+      responses.push(stringifyResponse(resAUTR));
+      break;;
     // case 'create_game':
 
     //   console.log(`Game created with ID: ${message.data?.idGame}`);
     //   break;
-    // case 'update_room':
-
-    //   console.log(`Rooms updated`, message.data);
-    //   break;
+    
     // case 'add_ships':
 
     //   console.log(`Ships added for player ${message.data.indexPlayer}`);
