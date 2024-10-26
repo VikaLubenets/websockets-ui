@@ -1,6 +1,7 @@
 export interface PlayerData {
     name: string;
     password: string;
+    wins: number;
 }
 
 export type WebSocketRequest =

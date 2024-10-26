@@ -1,16 +1,17 @@
-import { RegRequest, WebSocketMessage } from "../models/types";
+import { RegRequest, WebSocketMessage, WebSocketRequest } from "../models/types";
 import { register } from "./helpers/register";
+import { updateWinners } from './helpers/updateWinners';
 
-export default function MessageHandler(message: WebSocketMessage): string {
+export default function MessageHandler(message: WebSocketRequest): string[] {
+  const responses: string[] = [];
+
   switch (message.type) {
     case 'reg':
-       const res = register(message as RegRequest);
-       return JSON.stringify(res);
-      break;
-    // case 'update_winners':
-
-    //   console.log(`Winners table updated:`, message.data);
-    //   break;
+        const resReg = register(message as RegRequest);
+        responses.push(JSON.stringify(resReg));
+        const resUW = updateWinners()
+        responses.push(JSON.stringify(resUW));
+    break
     // case 'create_room':
 
     //   console.log(`Room created`);
@@ -52,6 +53,8 @@ export default function MessageHandler(message: WebSocketMessage): string {
     //   console.log(`Player ${message.data.winPlayer} wins`);
     //   break;
     default:
-      return JSON.stringify({ error: 'Unknown request type' });
+      responses.push(JSON.stringify({ error: 'Unknown request type' }));
   }
+
+  return responses;
 }

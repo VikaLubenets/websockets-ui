@@ -19,12 +19,17 @@ export default class DataController {
         return this.playerData.some(player => player.name === name);
     }
 
-    public setPlayerData(data: PlayerData): number {
-        this.playerData.push(data);
+    public setPlayerData(data: {name: string, password: string}): number {
+        const newPlayer: PlayerData = { ...data, wins: 0 };
+        this.playerData.push(newPlayer);
         return this.playerData.length - 1;
     }
 
     public getPlayerData(): PlayerData[] {
         return this.playerData;
+    }
+
+    public getPlayer(name: string){
+        return this.playerData.find(player => player.name === name);
     }
 }
