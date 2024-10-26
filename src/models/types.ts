@@ -1,5 +1,5 @@
 export interface PlayerData {
-    login: string;
+    name: string;
     password: string;
 }
 

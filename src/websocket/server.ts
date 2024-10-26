@@ -1,6 +1,7 @@
 import WebSocket from 'ws';
 import MessageHandler from './messageHandler';
 import { WebSocketMessage } from '../models/types';
+import { deepJSONParse } from './helpers/deepJSONParse'
 
 export function startWebSocketServer() {
     const PORT = 3000;
@@ -8,8 +9,9 @@ export function startWebSocketServer() {
 
     server.on('connection', (ws) => {
         ws.on('message', (message) => {
-            const parsedMessage = JSON.parse(message.toString()) as WebSocketMessage;
-            MessageHandler(parsedMessage);
+            const parsedMessage = deepJSONParse(message.toString());
+            const res = MessageHandler(parsedMessage as unknown as WebSocketMessage);
+            ws.send(res);
         });
 
         ws.on('close', () => {
