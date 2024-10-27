@@ -121,11 +121,10 @@ export default class DataController {
             };
     
             const shipsArray = Object.values(ships);
-            console.log(shipsArray);
     
             shipsArray.forEach(ship => {
                 const { x, y } = ship.position;
-                console.log(`Корабль: ${JSON.stringify(ship)}`);
+
                 for (let i = 0; i < ship.length; i++) {
                     const posX = ship.direction ? x : x + i;
                     const posY = ship.direction ? y + i : y;
@@ -134,10 +133,7 @@ export default class DataController {
                     }
                 }
             });
-            console.log(`Матрица игрока ${playerId}:`);
-            playerShips.matrix.forEach(row => {
-                console.log(row.join(' '));
-            });
+
             game.gameStatus.push(playerShips);
         }
     

@@ -23,26 +23,17 @@ export function attack(message: AttackRequest): AttackResponse | null {
 
         const arr = Object.values(opponentStatus.ships);
 
-        const ship = arr.find(ship => {
+        const isKilled = arr.some(ship => {
             const positions = Array.from({ length: ship.length }, (_, i) => ({
-                x: ship.direction ? ship.position.x + i : ship.position.x,
-                y: ship.direction ? ship.position.y : ship.position.y + i,
+                x: ship.direction ? ship.position.x : ship.position.x + i,
+                y: ship.direction ? ship.position.y + i : ship.position.y,
             }));
             
-            return positions.some(pos => pos.x === x && pos.y === y);
+            return positions.every(pos => opponentStatus.matrix[pos.y][pos.x] === -1);
         });
-    
-        if (ship) {
-            const positions = Array.from({ length: ship.length }, (_, i) => ({
-                x: ship.direction ? ship.position.x + i : ship.position.x,
-                y: ship.direction ? ship.position.y : ship.position.y + i,
-            }));
-    
-            const isKilled = positions.every(pos => opponentStatus.matrix[pos.y][pos.x] === -1);
-            
-            if (isKilled) {
-                status = "killed";
-            }
+
+        if (isKilled) {
+            status = "killed";
         }
     }
 
