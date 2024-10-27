@@ -84,10 +84,10 @@ export default function MessageHandler(message: WebSocketRequest, playerId: numb
         }
       }
       break;
-    // case 'randomAttack':
+    case 'randomAttack':
 
-    //   console.log(`Random attack by player ${message.data.indexPlayer}`);
-    //   break;
+      console.log(`Random attack by player ${message.data.indexPlayer}`);
+      break;
 
     // case 'finish':
 
