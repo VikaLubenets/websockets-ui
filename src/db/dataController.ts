@@ -99,7 +99,8 @@ export default class DataController {
             room.gameId = gameId;
             const newGame: Game = {
                 id: gameId,
-                gameStatus: []
+                gameStatus: [],
+                turn: null,
             };
             this.games.push(newGame);
             return room;
@@ -108,19 +109,50 @@ export default class DataController {
 
     public addShips(gameId: number, playerId: number, ships: Ship[]) {
         const game = this.games.find((game) => game.id === gameId);
+        if (!game) return;
     
-        if (game) {
-            const existingPlayerShips = game.gameStatus.find(status => status.indexPlayer === playerId);
+        const existingPlayerShips = game.gameStatus.find(status => status.indexPlayer === playerId);
             
-            if (!existingPlayerShips) {
-                const playerShips = {
-                    indexPlayer: playerId,
-                    ships
-                };
-                game.gameStatus.push(playerShips);
-            }
+        if (!existingPlayerShips) {
+            const playerShips = {
+                indexPlayer: playerId,
+                ships,
+                matrix: Array(10).fill(0).map(() => Array(10).fill(0))
+            };
     
-            return game;
+            const shipsArray = Object.values(ships);
+    
+            shipsArray.forEach(ship => {
+                const { x, y } = ship.position;
+                for (let i = 0; i < ship.length; i++) {
+                    const posX = ship.direction ? x + i : x;
+                    const posY = ship.direction ? y : y + i;
+                    if (posX < 10 && posY < 10) {
+                        playerShips.matrix[posY][posX] = 1;
+                    }
+                }
+            });
+
+            game.gameStatus.push(playerShips);
+        }
+    
+        return game;
+    }
+    
+    public addGameTurn(gameId: number){
+        const game = this.games.find((game) => game.id === gameId);
+        const playersId = game?.gameStatus.map((status) => status.indexPlayer)
+
+        if(game && playersId){
+            if(game.turn !== null){
+                if(game.turn === playersId[0]){
+                    game.turn = playersId[1]
+                } else if(game.turn === playersId[1]){
+                    game.turn = playersId[0]
+                }
+            } else {
+                game.turn = playersId[0];
+            }
         }
     }
 

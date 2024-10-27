@@ -24,7 +24,9 @@ export interface Game {
   gameStatus: {
     indexPlayer: number;
     ships: Ship[];
-  }[]
+    matrix: number[][];
+  }[],
+  turn: number | null;
 }
 
 export interface Ship {
