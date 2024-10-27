@@ -1,7 +1,7 @@
 import DataController from "../../db/dataController";
-import { AttackRequest, AttackResponse } from "../../models/types";
+import { AttackResponse, RandomAttackRequest } from "../../models/types";
 
-export function attack(message: AttackRequest): { response: AttackResponse | null, gameWon: boolean, winnerId: number | null} {
+export function randomAttack(message: RandomAttackRequest): { response: AttackResponse | null, gameWon: boolean, winnerId: number | null} {
     let gameWon = false;
     let winnerId: number | null = null;
     let response: AttackResponse | null = null;
@@ -18,7 +18,8 @@ export function attack(message: AttackRequest): { response: AttackResponse | nul
     const opponentStatus = game.gameStatus.find(status => status.indexPlayer !== currentPlayerId);
     if (!opponentStatus) return { response, gameWon, winnerId}
 
-    const { x, y } = message.data;
+    const x = Math.floor(Math.random() * 10);
+    const y = Math.floor(Math.random() * 10); 
     let status: "miss" | "shot" | "killed" = "miss";
 
     if (opponentStatus.matrix[y][x] === 1) {

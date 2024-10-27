@@ -11,6 +11,8 @@ import { addShips } from "./helpers/addShips";
 import { startGame } from "./helpers/startGame";
 import { addTurn } from "./helpers/addTurn";
 import { attack } from "./helpers/attack";
+import { randomAttack } from "./helpers/randomAttack";
+import { finish } from "./helpers/finish";
 
 export default function MessageHandler(message: WebSocketRequest, playerId: number, options?: Player,): string[] {
   const responses: string[] = [];
@@ -73,26 +75,51 @@ export default function MessageHandler(message: WebSocketRequest, playerId: numb
       const room = data.getRoomByGameId(Number(message.data.gameId))
       if(room){
         const players = room.players;
-        const resA = attack(message)
+        const { response: resA, gameWon, winnerId} = attack(message)
         if(resA){
           players[0].connection.send(stringifyResponse(resA));
           players[1].connection.send(stringifyResponse(resA));
-  
-          const turnResA = addTurn(Number(message.data.gameId));
-          players[0].connection.send(stringifyResponse(turnResA));
-          players[1].connection.send(stringifyResponse(turnResA));
+
+          if(gameWon && winnerId !== null){
+            const resGW = finish(winnerId, Number(message.data.gameId))
+            players[0].connection.send(stringifyResponse(resGW));
+            players[1].connection.send(stringifyResponse(resGW));
+
+            const resUW = updateWinners()
+            allPlayers.forEach(player => player.connection.send(stringifyResponse(resUW)))
+          } else {
+            const turnResA = addTurn(Number(message.data.gameId));
+            players[0].connection.send(stringifyResponse(turnResA));
+            players[1].connection.send(stringifyResponse(turnResA));
+          }
         }
       }
       break;
     case 'randomAttack':
+      const roomRA = data.getRoomByGameId(Number(message.data.gameId))
+      if(roomRA){
+        const players = roomRA.players;
+        const { response: resRA, gameWon, winnerId} = randomAttack(message)
+        if(resRA){
+          players[0].connection.send(stringifyResponse(resRA));
+          players[1].connection.send(stringifyResponse(resRA));
 
-      console.log(`Random attack by player ${message.data.indexPlayer}`);
+          if(gameWon && winnerId !== null){
+            const resGW = finish(winnerId, Number(message.data.gameId))
+            players[0].connection.send(stringifyResponse(resGW));
+            players[1].connection.send(stringifyResponse(resGW));
+
+            const resUW = updateWinners()
+            allPlayers.forEach(player => player.connection.send(stringifyResponse(resUW)))
+          } else {
+            const turnResA = addTurn(Number(message.data.gameId));
+            players[0].connection.send(stringifyResponse(turnResA));
+            players[1].connection.send(stringifyResponse(turnResA));
+          }
+        }
+      }
       break;
 
-    // case 'finish':
-
-    //   console.log(`Player ${message.data.winPlayer} wins`);
-    //   break;
     default:
       responses.push(JSON.stringify({ error: 'Unknown request type' }));
   }

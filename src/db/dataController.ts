@@ -101,6 +101,7 @@ export default class DataController {
                 id: gameId,
                 gameStatus: [],
                 turn: null,
+                winner: null,
             };
             this.games.push(newGame);
             return room;
@@ -114,13 +115,14 @@ export default class DataController {
         const existingPlayerShips = game.gameStatus.find(status => status.indexPlayer === playerId);
             
         if (!existingPlayerShips) {
+            const shipsArray = Object.values(ships);
+
             const playerShips = {
                 indexPlayer: playerId,
                 ships,
-                matrix: Array(10).fill(0).map(() => Array(10).fill(0))
+                matrix: Array(10).fill(0).map(() => Array(10).fill(0)),
+                remainingShips: shipsArray.length,
             };
-    
-            const shipsArray = Object.values(ships);
     
             shipsArray.forEach(ship => {
                 const { x, y } = ship.position;
@@ -138,6 +140,15 @@ export default class DataController {
         }
     
         return game;
+    }
+
+    public deleteShip(gameId: number, playerId: number){
+        const game = this.games.find((game) => game.id === gameId);
+        if (!game) return;
+    
+        const playerShips = game.gameStatus.find(status => status.indexPlayer === playerId);
+        if(!playerShips) return;
+        playerShips.remainingShips -= 1;
     }
     
     public addGameTurn(gameId: number){
@@ -159,5 +170,18 @@ export default class DataController {
 
     public getGameById(gameId: number){
         return this.games.find((game) => game.id === gameId)
+    }
+
+    public finish(gameId: number, winnerId: number) {
+        const game = this.getGameById(gameId);
+        if (!game) return;
+    
+        game.winner = winnerId;
+        const winner = this.getPlayerById(winnerId);
+        if (winner) {
+            winner.wins += 1;
+        }
+    
+        return game;
     }
 }
