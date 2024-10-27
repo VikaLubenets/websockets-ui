@@ -7,6 +7,8 @@ import { createRoom } from "./helpers/createRoom";
 import { addUserToRoom } from "./helpers/addUserToRoom";
 import { createGame } from "./helpers/createGame";
 import DataController from "../db/dataController";
+import { addShips } from "./helpers/addShips";
+import { startGame } from "./helpers/startGame";
 
 export default function MessageHandler(message: WebSocketRequest, playerId: number, options?: Player,): string[] {
   const responses: string[] = [];
@@ -43,17 +45,28 @@ export default function MessageHandler(message: WebSocketRequest, playerId: numb
             players[0].connection.send(stringifyResponse(createGame(Number(message.data.indexRoom), players[0].id)))
             players[1].connection.send(stringifyResponse(createGame(Number(message.data.indexRoom), players[1].id)))
           }
+          console.log('room', data.getRoomById(Number(message.data.indexRoom)))
       }
       break;
 
-    // case 'add_ships':
+    case 'add_ships':
+      const { shouldStartGame } = addShips(message);
+      console.log('shouldStartGame 1', shouldStartGame)
+      if (shouldStartGame) {
+        console.log('shouldStartGame 2', shouldStartGame)
+          const room = data.getRoomByGameId(Number(message.data.gameId))
+          if(room){
+            console.log('shouldStartGame 3', shouldStartGame)
+            const players = room.players;
+            const startMessageP1 = stringifyResponse(startGame(players[0].id, Number(message.data.gameId)));
+            const startMessageP2 = stringifyResponse(startGame(players[1].id, Number(message.data.gameId)));
+            
+            players[0].connection.send(startMessageP1);
+            players[1].connection.send(startMessageP2);
+          }
+      }
+      break;
 
-    //   console.log(`Ships added for player ${message.data.indexPlayer}`);
-    //   break;
-    // case 'start_game':
-
-    //   console.log(`Game started for player ${message.data.currentPlayerIndex}`);
-    //   break;
     // case 'attack':
 
     //   console.log(`Attack`);

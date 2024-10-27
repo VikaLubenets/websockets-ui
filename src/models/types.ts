@@ -19,6 +19,24 @@ export interface RoomData {
     gameId?: number | string | null; 
 }
 
+export interface Game {
+  id: number;
+  gameStatus: {
+    indexPlayer: number;
+    ships: Ship[];
+  }[]
+}
+
+export interface Ship {
+    position: {
+        x: number;
+        y: number;
+    },
+    direction: boolean;
+    length: number;
+    type: "small"|"medium"|"large"|"huge";
+}
+
 export type WebSocketRequest =
   | RegRequest
   | CreateRoomRequest

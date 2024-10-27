@@ -1,15 +1,17 @@
-import { Player, PlayerData, RoomData } from "../models/types";
+import { Game, Player, PlayerData, RoomData, Ship } from "../models/types";
 
 export default class DataController {
     private static instance: DataController | null = null;
     private playerData: PlayerData[];
     private roomsData: RoomData[];
     private gameId: number;
+    private games: Game[];
 
     private constructor() {
         this.playerData = [];
         this.roomsData = [];
         this.gameId = 0;
+        this.games = [];
     }
 
     public static getInstance(): DataController {
@@ -29,11 +31,7 @@ export default class DataController {
         return this.playerData.length - 1;
     }
 
-    public getPlayerData(): PlayerData[] {
-        return this.playerData;
-    }
-
-    public getPlayer(name: string){
+    public getPlayerByName(name: string){
         return this.playerData.find(player => player.name === name);
     }
 
@@ -72,7 +70,6 @@ export default class DataController {
     
         return false;
     }
-    
 
     public getAvailableRooms(): RoomData[] {
         return this.roomsData.filter(room => room.players.length === 1);
@@ -86,11 +83,48 @@ export default class DataController {
         return this.roomsData.find(room => room.id === id);
     }
 
-    public createGame(roomId: number){
-        const room = this.roomsData.find(room => room.id === roomId)
-        if(room){
-            room.gameId = this.gameId++;
-            return room
+    public getRoomByGameId(id: number){
+        return this.roomsData.find(room => room.gameId === id);
+    }
+
+    public createGame(roomId: number) {
+        const room = this.roomsData.find(room => room.id === roomId);
+        
+        if (room) {
+            if (room.gameId !== null) {
+                return room;
+            }
+            
+            const gameId = this.gameId++;
+            room.gameId = gameId;
+            const newGame: Game = {
+                id: gameId,
+                gameStatus: []
+            };
+            this.games.push(newGame);
+            return room;
         }
+    }
+
+    public addShips(gameId: number, playerId: number, ships: Ship[]) {
+        const game = this.games.find((game) => game.id === gameId);
+    
+        if (game) {
+            const existingPlayerShips = game.gameStatus.find(status => status.indexPlayer === playerId);
+            
+            if (!existingPlayerShips) {
+                const playerShips = {
+                    indexPlayer: playerId,
+                    ships
+                };
+                game.gameStatus.push(playerShips);
+            }
+    
+            return game;
+        }
+    }
+
+    public getGameById(gameId: number){
+        return this.games.find((game) => game.id === gameId)
     }
 }
