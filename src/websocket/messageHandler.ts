@@ -13,6 +13,7 @@ import { addTurn } from "./helpers/addTurn";
 import { attack } from "./helpers/attack";
 import { randomAttack } from "./helpers/randomAttack";
 import { finish } from "./helpers/finish";
+import { addSameTurn } from "./helpers/addSameTurn";
 
 export default function MessageHandler(message: WebSocketRequest, playerId: number, options?: Player,): string[] {
   const responses: string[] = [];
@@ -27,27 +28,36 @@ export default function MessageHandler(message: WebSocketRequest, playerId: numb
 
         const resUW = updateWinners()
         allPlayers.forEach(player => player.connection.send(stringifyResponse(resUW)))
+        console.log(`Sent response to all players:`, resUW);
 
         const resUR = updateRoom();
         allPlayers.forEach(player => player.connection.send(stringifyResponse(resUR)))
+        console.log(`Sent response to all players:`, resUR);
       }
     break
     case 'create_room':
       const resCR = createRoom(message, playerId);
       allPlayers.forEach(player => player.connection.send(stringifyResponse(resCR)))
+      console.log(`Sent response to all players:`, resCR);
 
       break;
     case 'add_user_to_room':
       const { resAUTR, shouldCreateGame } = addUserToRoom(message, playerId);
       if (resAUTR) {
         allPlayers.forEach(player => player.connection.send(stringifyResponse(resAUTR)))
+        console.log(`Sent response to all players:`, resAUTR);
       }
       if (shouldCreateGame) {
           const room = data.getRoomById(Number(message.data.indexRoom))
           if(room){
             const players = room.players
-            players[0].connection.send(stringifyResponse(createGame(Number(message.data.indexRoom), players[0].id)))
-            players[1].connection.send(stringifyResponse(createGame(Number(message.data.indexRoom), players[1].id)))
+
+            const firstM = createGame(Number(message.data.indexRoom), players[0].id);
+            const secondM = createGame(Number(message.data.indexRoom), players[1].id);
+            players[0].connection.send(stringifyResponse(firstM))
+            players[1].connection.send(stringifyResponse(secondM))
+            console.log(`Sent response to the game room id ${room.id} and player ${players[0].id}:`, firstM);
+            console.log(`Sent response to the game room id ${room.id} and player ${players[1].id}:`, secondM);
           }
       }
       break;
@@ -64,9 +74,13 @@ export default function MessageHandler(message: WebSocketRequest, playerId: numb
             players[0].connection.send(startMessageP1);
             players[1].connection.send(startMessageP2);
 
+            console.log(`Sent response to the game room id ${room.id} and player ${players[0].id}:`, startMessageP1);
+            console.log(`Sent response to the game room id ${room.id} and player ${players[1].id}:`, startMessageP2);
+
             const turnRes = addTurn(Number(message.data.gameId));
             players[0].connection.send(stringifyResponse(turnRes));
             players[1].connection.send(stringifyResponse(turnRes));
+            console.log(`Sent response to the game room id ${room.id} and both players:`, turnRes);
           }
       }
       break;
@@ -79,18 +93,30 @@ export default function MessageHandler(message: WebSocketRequest, playerId: numb
         if(resA){
           players[0].connection.send(stringifyResponse(resA));
           players[1].connection.send(stringifyResponse(resA));
+          console.log(`Sent response to the game room id ${room.id} and both players:`, resA);
 
           if(gameWon && winnerId !== null){
             const resGW = finish(winnerId, Number(message.data.gameId))
             players[0].connection.send(stringifyResponse(resGW));
             players[1].connection.send(stringifyResponse(resGW));
+            console.log(`Sent response to the game room id ${room.id} and both players:`, resGW);
 
             const resUW = updateWinners()
             allPlayers.forEach(player => player.connection.send(stringifyResponse(resUW)))
+            console.log(`Sent response to all players:`, resUW);
           } else {
-            const turnResA = addTurn(Number(message.data.gameId));
-            players[0].connection.send(stringifyResponse(turnResA));
-            players[1].connection.send(stringifyResponse(turnResA));
+
+            if(resA.data.status === 'shot' || resA.data.status === 'killed'){
+              const turnResA = addSameTurn(Number(message.data.gameId));
+              players[0].connection.send(stringifyResponse(turnResA));
+              players[1].connection.send(stringifyResponse(turnResA));
+              console.log(`Sent response to the game room id ${room.id} and both players:`, turnResA);
+            } else {
+              const turnResA = addTurn(Number(message.data.gameId));
+              players[0].connection.send(stringifyResponse(turnResA));
+              players[1].connection.send(stringifyResponse(turnResA));
+              console.log(`Sent response to the game room id ${room.id} and both players:`, turnResA);
+            }
           }
         }
       }
@@ -103,18 +129,29 @@ export default function MessageHandler(message: WebSocketRequest, playerId: numb
         if(resRA){
           players[0].connection.send(stringifyResponse(resRA));
           players[1].connection.send(stringifyResponse(resRA));
+          console.log(`Sent response to the game room id ${roomRA.id} and both players:`, resRA);
 
           if(gameWon && winnerId !== null){
             const resGW = finish(winnerId, Number(message.data.gameId))
             players[0].connection.send(stringifyResponse(resGW));
             players[1].connection.send(stringifyResponse(resGW));
+            console.log(`Sent response to the game room id ${roomRA.id} and both players:`, resGW);
 
             const resUW = updateWinners()
             allPlayers.forEach(player => player.connection.send(stringifyResponse(resUW)))
+            console.log(`Sent response to all players:`, resUW);
           } else {
-            const turnResA = addTurn(Number(message.data.gameId));
-            players[0].connection.send(stringifyResponse(turnResA));
-            players[1].connection.send(stringifyResponse(turnResA));
+            if(resRA.data.status === 'shot' || resRA.data.status === 'killed'){
+              const turnResA = addSameTurn(Number(message.data.gameId));
+              players[0].connection.send(stringifyResponse(turnResA));
+              players[1].connection.send(stringifyResponse(turnResA));
+              console.log(`Sent response to the game room id ${roomRA.id} and both players:`, turnResA);
+            } else {
+              const turnResA = addTurn(Number(message.data.gameId));
+              players[0].connection.send(stringifyResponse(turnResA));
+              players[1].connection.send(stringifyResponse(turnResA));
+              console.log(`Sent response to the game room id ${roomRA.id} and both players:`, turnResA);
+            }
           }
         }
       }

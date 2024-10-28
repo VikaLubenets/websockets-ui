@@ -168,6 +168,21 @@ export default class DataController {
         }
     }
 
+    public addSameTurn(gameId: number){
+        const game = this.games.find((game) => game.id === gameId);
+        const playersId = game?.gameStatus.map((status) => status.indexPlayer)
+
+        if(game && playersId){
+            if(game.turn !== null){
+                if(game.turn === playersId[0]){
+                    game.turn = playersId[0]
+                } else if(game.turn === playersId[1]){
+                    game.turn = playersId[1]
+                }
+            }
+        }
+    }
+
     public getGameById(gameId: number){
         return this.games.find((game) => game.id === gameId)
     }

@@ -14,6 +14,7 @@ export function startWebSocketServer() {
         ws.on('message', (message) => {
             let responses;
             const parsedMessage = deepJSONParse(message.toString()) as unknown as WebSocketRequest;
+            console.log(`Received request:`, parsedMessage);
             
             if(parsedMessage.type === 'reg'){
                 const options = {
@@ -25,7 +26,10 @@ export function startWebSocketServer() {
                 responses = MessageHandler(parsedMessage as unknown as WebSocketRequest, playerId);
             }
 
-            responses.forEach((res) => ws.send(res))
+            responses.forEach((response) => {
+                console.log(`Sent response to one player:`, response);
+                ws.send(response);
+            });
         });
 
         ws.on('close', () => {
